@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Know The World Using A.I. — By Yash Thummar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#f8f6f1;color:#1c1a16;font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.45}
+#prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#006b5e,#b8860b);z-index:9999;width:0;transition:width .1s linear}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(248,246,241,.97);backdrop-filter:blur(14px);border-bottom:1px solid #e8e4dc;transition:box-shadow .3s}
+nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,.08)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+.nav-logo-icon{width:36px;height:36px;background:#006b5e;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Playfair Display',serif;font-size:13px;font-weight:700;font-style:italic;flex-shrink:0}
+.nav-logo-text{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:#1c1a16;line-height:1.25}
+.nav-logo-sub{font-size:10px;color:#9a958e;font-family:'Inter',sans-serif;font-weight:400;display:block}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;color:#5a5650;padding:8px 13px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#006b5e;background:#e8f5f3}
+.nav-link.on{color:#006b5e;font-weight:600;background:#e8f5f3}
+.nav-cta{background:#006b5e;color:#fff;border:none;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;padding:9px 18px;border-radius:6px;cursor:pointer;transition:all .2s;margin-left:6px;white-space:nowrap}
+.nav-cta:hover{background:#008f7a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,107,94,.3)}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:130px 28px 90px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d4cfc6;border-radius:20px;padding:6px 16px;font-size:11px;color:#006b5e;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:30px;box-shadow:0 2px 12px rgba(0,0,0,.06);opacity:0;animation:fadeUp .7s .1s ease forwards}
+.badge-dot{width:6px;height:6px;background:#006b5e;border-radius:50%;animation:pulse 2s infinite}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,5.5vw,5rem);line-height:1.06;color:#1c1a16;max-width:860px;margin:0 auto 22px;font-weight:700;opacity:0;animation:fadeUp .7s .2s ease forwards}
+.hero h1 em{font-style:italic;color:#006b5e}
+.hero h1 .gold{color:#b8860b}
+.hero-sub{font-size:16px;color:#5a5650;max-width:560px;margin:0 auto 12px;font-weight:300;line-height:1.75;opacity:0;animation:fadeUp .7s .3s ease forwards}
+.hero-author{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#9a958e;letter-spacing:.08em;opacity:0;animation:fadeUp .7s .35s ease forwards;margin-bottom:36px}
+.hero-btns{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;opacity:0;animation:fadeUp .7s .45s ease forwards}
+.btn-primary{background:#006b5e;color:#fff;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:14px 30px;border-radius:8px;cursor:pointer;transition:all .25s}
+.btn-primary:hover{background:#008f7a;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,107,94,.35)}
+.btn-secondary{background:#fff;color:#1c1a16;border:1px solid #d4cfc6;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;padding:14px 30px;border-radius:8px;cursor:pointer;transition:all .25s}
+.btn-secondary:hover{border-color:#006b5e;color:#006b5e;transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+
+/* STATS */
+.stats-strip{position:relative;z-index:1;background:#006b5e;padding:0 28px;display:flex;justify-content:center;flex-wrap:wrap}
+.stat-item{text-align:center;padding:22px 36px;border-right:1px solid rgba(255,255,255,.18)}
+.stat-item:last-child{border-right:none}
+.stat-n{font-family:'Playfair Display',serif;font-size:2.1rem;color:#fff;font-weight:700;line-height:1}
+.stat-l{font-size:10.5px;color:rgba(255,255,255,.65);letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+
+/* SECTIONS */
+section{position:relative;z-index:1}
+.section-inner{max-width:1200px;margin:0 auto;padding:72px 28px}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#006b5e;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:'';width:22px;height:1px;background:#006b5e}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3.2vw,2.6rem);color:#1c1a16;font-weight:700;margin-bottom:12px;line-height:1.2}
+.section-desc{font-size:15px;color:#5a5650;max-width:560px;font-weight:300;line-height:1.75}
+.sh-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:44px;flex-wrap:wrap}
+.sh-tag{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#006b5e;border:1px solid rgba(0,107,94,.3);padding:5px 12px;border-radius:4px;background:#e8f5f3;white-space:nowrap}
+
+/* DOMAIN CARDS */
+.domain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:28px}
+.domain-card{background:#faf9f5;border:1px solid #e8e4dc;border-radius:12px;padding:20px 16px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;text-align:left}
+.domain-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:#006b5e;transform:scaleX(0);transition:transform .25s;transform-origin:left}
+.domain-card:hover{border-color:#d4cfc6;transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.1);background:#fff}
+.domain-card:hover::after{transform:scaleX(1)}
+.domain-card.active{border-color:#006b5e;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.1)}
+.domain-card.active::after{transform:scaleX(1)}
+.domain-icon{font-size:26px;margin-bottom:11px;display:block}
+.domain-name{font-size:13px;font-weight:600;color:#1c1a16;margin-bottom:5px;line-height:1.3}
+.domain-hint{font-size:11px;color:#9a958e;line-height:1.5}
+
+/* DETAIL PANEL */
+.detail-panel{background:#faf9f5;border:1px solid #e8e4dc;border-radius:12px;padding:28px;display:none}
+.detail-panel.open{display:block;animation:expandIn .3s ease}
+.dp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #e8e4dc;gap:16px;flex-wrap:wrap}
+.dp-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#1c1a16;margin-bottom:4px}
+.dp-sub{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#006b5e;letter-spacing:.05em}
+.dp-close{background:#fff;border:1px solid #d4cfc6;color:#5a5650;font-size:12.5px;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.dp-close:hover{border-color:#c0392b;color:#c0392b;background:#fff5f5}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.dp-col-title{font-size:10.5px;font-weight:600;color:#9a958e;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+.tool-item{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid #e8e4dc}
+.tool-item:last-child{border-bottom:none}
+.tool-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;flex-shrink:0;margin-top:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.05em}
+.tb-free{background:rgba(0,107,94,.1);color:#006b5e;border:1px solid rgba(0,107,94,.22)}
+.tb-paid{background:rgba(184,134,11,.1);color:#b8860b;border:1px solid rgba(184,134,11,.22)}
+.tool-info h4{font-size:13px;font-weight:600;color:#1c1a16;margin-bottom:3px}
+.tool-info p{font-size:12px;color:#5a5650;line-height:1.55}
+.tool-link{font-size:11.5px;color:#006b5e;text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:4px;margin-top:5px;transition:color .2s}
+.tool-link:hover{color:#008f7a;text-decoration:underline}
+.prompt-card{background:#fff;border:1px solid #e8e4dc;border-radius:8px;padding:13px 15px;margin-bottom:8px;cursor:pointer;transition:all .2s;text-align:left;width:100%;display:block}
+.prompt-card:hover{border-color:#006b5e;background:#e8f5f3}
+.prompt-label{font-size:9.5px;font-weight:700;color:#006b5e;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.prompt-text{font-size:12px;color:#5a5650;line-height:1.5}
+.prompt-copy-hint{font-size:10px;color:#9a958e;margin-top:5px}
+
+/* ALL TOOLS */
+.tool-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.tc{background:#fff;border:1px solid #e8e4dc;border-radius:12px;overflow:hidden;transition:all .25s;cursor:pointer}
+.tc:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.1);border-color:#d4cfc6}
+.tc-head{background:#006b5e;padding:16px 18px;display:flex;align-items:center;gap:12px}
+.tc-icon{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tc-meta{flex:1}
+.tc-num{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:rgba(255,255,255,.55);font-weight:500;margin-bottom:1px}
+.tc-name{font-size:14px;font-weight:600;color:#fff}
+.tc-body{padding:16px 18px}
+.tc-body p{font-size:12.5px;color:#5a5650;line-height:1.6;margin-bottom:11px}
+.tc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tc-tag{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid #e8e4dc;color:#9a958e;background:#faf9f5}
+.tc-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#006b5e;font-weight:500;text-decoration:none;transition:gap .2s}
+.tc-link:hover{gap:8px;text-decoration:underline}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:44px}
+.timeline::before{content:'';position:absolute;left:17px;top:0;bottom:0;width:2px;background:#e8e4dc}
+.tl-item{position:relative;margin-bottom:28px;opacity:0;transform:translateX(-12px);transition:opacity .5s,transform .5s}
+.tl-item.visible{opacity:1;transform:translateX(0)}
+.tl-dot{position:absolute;left:-35px;top:4px;width:20px;height:20px;background:#fff;border:2px solid #006b5e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#006b5e;font-weight:700;font-family:'JetBrains Mono',monospace}
+.tl-card{background:#fff;border:1px solid #e8e4dc;border-radius:12px;padding:20px 22px}
+.tl-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:#006b5e;letter-spacing:.08em;text-transform:uppercase;font-weight:500;margin-bottom:6px}
+.tl-card h3{font-size:15px;font-weight:600;color:#1c1a16;margin-bottom:10px}
+.tl-card ul{list-style:none}
+.tl-card li{font-size:13px;color:#5a5650;padding:5px 0;display:flex;align-items:flex-start;gap:10px;border-top:1px solid #e8e4dc}
+.tl-card li::before{content:'→';color:#006b5e;font-size:11px;margin-top:4px;flex-shrink:0}
+
+/* METHOD */
+.method-layers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px}
+.layer-card{background:#fff;border:1px solid #e8e4dc;border-radius:12px;padding:26px 22px;position:relative;transition:all .25s;overflow:hidden}
+.layer-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.09)}
+.layer-num{font-family:'Playfair Display',serif;font-size:4.5rem;color:rgba(0,107,94,.07);font-weight:700;position:absolute;top:6px;right:14px;line-height:1;pointer-events:none}
+.layer-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:#006b5e;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.layer-card h3{font-size:16px;font-weight:700;color:#1c1a16;margin-bottom:8px;font-family:'Playfair Display',serif}
+.layer-card p{font-size:13px;color:#5a5650;line-height:1.65}
+.principles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.principle{background:#fff;border:1px solid #e8e4dc;border-left:4px solid #006b5e;border-radius:0 12px 12px 0;padding:20px 22px;transition:all .25s}
+.principle:hover{box-shadow:0 6px 20px rgba(0,0,0,.07);transform:translateY(-2px)}
+.principle h3{font-size:14px;font-weight:600;color:#1c1a16;margin-bottom:8px}
+.principle p{font-size:13px;color:#5a5650;line-height:1.65}
+.principle p em{color:#006b5e;font-style:normal;font-weight:600}
+
+/* INDIA */
+.india-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.india-card{background:#faf9f5;border:1px solid #e8e4dc;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s}
+.india-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.09);border-color:#d4cfc6}
+.india-card.expanded{border-color:#006b5e;box-shadow:0 8px 28px rgba(0,107,94,.12)}
+.ic-head{padding:16px 18px;background:#fff;border-bottom:1px solid transparent;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .25s}
+.india-card.expanded .ic-head{border-bottom-color:#e8e4dc}
+.ic-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#006b5e;margin-bottom:2px}
+.ic-title{font-size:14px;font-weight:600;color:#1c1a16}
+.ic-toggle{width:28px;height:28px;background:#faf9f5;border:1px solid #e8e4dc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:#5a5650;transition:all .25s;flex-shrink:0;line-height:1}
+.india-card.expanded .ic-toggle{background:#006b5e;color:#fff;border-color:#006b5e;transform:rotate(45deg)}
+.ic-body{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease}
+.india-card.expanded .ic-body{max-height:500px;padding:16px 18px}
+.ic-body p{font-size:13px;color:#5a5650;line-height:1.65;margin-bottom:12px}
+.ic-body ul{list-style:none}
+.ic-body li{font-size:12.5px;color:#5a5650;padding:6px 0;border-top:1px solid #e8e4dc;display:flex;gap:10px;align-items:flex-start}
+.ic-body li::before{content:'◦';color:#006b5e;flex-shrink:0;margin-top:2px;font-size:14px}
+
+/* FOOTER */
+footer{background:#1c1a16;color:rgba(255,255,255,.55);padding:56px 28px 32px;position:relative;z-index:1}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:48px;margin-bottom:40px;flex-wrap:wrap}
+.fb-name{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;font-weight:700;font-style:italic;margin-bottom:6px}
+.fb-sub{font-size:11.5px;color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;letter-spacing:.06em;margin-bottom:12px}
+.fb-desc{font-size:12.5px;color:rgba(255,255,255,.38);line-height:1.65;max-width:260px}
+.fl-title{font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+.footer-links a{display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:8px;transition:color .2s}
+.footer-links a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-bottom p{font-size:12px}
+.footer-bottom a{color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s}
+.footer-bottom a:hover{color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:#006b5e;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9998;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* FADE-IN */
+.fade-in{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes expandIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+
+@media(max-width:900px){
+  .nav-links{display:none}
+  .dp-grid{grid-template-columns:1fr}
+  .method-layers{grid-template-columns:1fr}
+  .principles{grid-template-columns:1fr}
+  .india-grid{grid-template-columns:1fr}
+  .stat-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.12);width:50%}
+}
+@media(max-width:500px){
+  .hero{padding:100px 18px 60px}
+  .section-inner{padding:52px 18px}
+  .stat-item{width:50%}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div id="prog"></div>
+<div class="toast" id="toast">✓ Prompt copied to clipboard</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#hero">
+      <div class="nav-logo-icon">AI</div>
+      <div class="nav-logo-text">Know The World Using A.I.
+        <span class="nav-logo-sub">By Yash Thummar</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goTo('domains')">Domains</button>
+      <button class="nav-link" onclick="goTo('tools')">AI Tools</button>
+      <button class="nav-link" onclick="goTo('routine')">Routine</button>
+      <button class="nav-link" onclick="goTo('method')">Method</button>
+      <button class="nav-link" onclick="goTo('india')">India</button>
+    </div>
+    <button class="nav-cta" onclick="goTo('domains')">Start Learning →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="hero" class="hero">
+  <div class="hero-badge"><span class="badge-dot"></span>Complete AI Knowledge System · 2026</div>
+  <h1>Know The World<br>Using <em>Artificial</em> <span class="gold">Intelligence</span></h1>
+  <p class="hero-sub">Chemistry · Pharma · Geopolitics · Society · Science · India · Future<br>Every domain mastered with the right AI tools and the right questions.</p>
+  <p class="hero-author">— Compiled by Yash Thummar —</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="goTo('domains')">Explore Domains</button>
+    <button class="btn-secondary" onclick="goTo('tools')">View All AI Tools</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-n" data-target="6">0</div><div class="stat-l">Knowledge Domains</div></div>
+  <div class="stat-item"><div class="stat-n" data-target="12">0</div><div class="stat-l">AI Tools Curated</div></div>
+  <div class="stat-item"><div class="stat-n" data-target="24">0</div><div class="stat-l">Prompt Templates</div></div>
+  <div class="stat-item"><div class="stat-n">∞</div><div class="stat-l">Curiosity Required</div></div>
+</div>
+
+<!-- DOMAINS -->
+<section id="domains" style="background:#fff">
+  <div class="section-inner">
+    <div class="sh-row fade-in">
+      <div>
+        <div class="section-label">Knowledge Domains</div>
+        <h2 class="section-title">Choose Your Field of Study</h2>
+        <p class="section-desc">Click any domain card to reveal AI tools, resource links, and ready-to-use prompt templates.</p>
+      </div>
+      <span class="sh-tag">6 DOMAINS</span>
+    </div>
+    <div class="domain-grid fade-in">
+      <div class="domain-card" onclick="openDomain('pharma')" id="dc-pharma"><span class="domain-icon">⚗️</span><div class="domain-name">Pharma & Chemistry</div><div class="domain-hint">API synthesis, drugs, cancer, molecules</div></div>
+      <div class="domain-card" onclick="openDomain('geo')" id="dc-geo"><span class="domain-icon">🌐</span><div class="domain-name">Geopolitics & Business</div><div class="domain-hint">India, China, USA, Middle East</div></div>
+      <div class="domain-card" onclick="openDomain('agri')" id="dc-agri"><span class="domain-icon">🌿</span><div class="domain-name">Agri & Chemicals</div><div class="domain-hint">Agrochemicals, supply chains, fertiliser</div></div>
+      <div class="domain-card" onclick="openDomain('society')" id="dc-society"><span class="domain-icon">👥</span><div class="domain-name">Society & Gen Z</div><div class="domain-hint">Social media, youth, transformation</div></div>
+      <div class="domain-card" onclick="openDomain('science')" id="dc-science"><span class="domain-icon">⚛️</span><div class="domain-name">Science & Medicine</div><div class="domain-hint">AI drug discovery, disease prediction</div></div>
+      <div class="domain-card" onclick="openDomain('future')" id="dc-future"><span class="domain-icon">📈</span><div class="domain-name">Future & Foresight</div><div class="domain-hint">India 2030, global risks, forecasting</div></div>
+    </div>
+    <div class="detail-panel" id="detail-panel">
+      <div class="dp-header">
+        <div>
+          <div class="dp-title" id="dp-title"></div>
+          <div class="dp-sub" id="dp-sub"></div>
+        </div>
+        <button class="dp-close" onclick="closePanel()">✕ Close</button>
+      </div>
+      <div class="dp-grid">
+        <div><div class="dp-col-title">// AI Tools for this domain</div><div id="dp-tools-list"></div></div>
+        <div><div class="dp-col-title">// Prompt Templates — tap to copy</div><div id="dp-prompts-list"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL TOOLS -->
+<section id="tools" style="background:#f8f6f1">
+  <div class="section-inner">
+    <div class="sh-row fade-in">
+      <div>
+        <div class="section-label">Complete AI Toolkit</div>
+        <h2 class="section-title">Every Tool You Need</h2>
+        <p class="section-desc">12 curated AI tools — click any card to open the tool directly.</p>
+      </div>
+      <span class="sh-tag">12 TOOLS</span>
+    </div>
+    <div class="tool-cards fade-in" id="tool-cards"></div>
+  </div>
+</section>
+
+<!-- ROUTINE -->
+<section id="routine" style="background:#fff">
+  <div class="section-inner">
+    <div class="sh-row fade-in">
+      <div>
+        <div class="section-label">Daily System</div>
+        <h2 class="section-title">Your AI Learning Routine</h2>
+        <p class="section-desc">A structured daily practice that builds compound knowledge. Consistency is the only variable.</p>
+      </div>
+      <span class="sh-tag">6 STEPS</span>
+    </div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot">1</div><div class="tl-card"><div class="tl-time">☀️ Morning · 10 minutes</div><h3>Current Affairs Scan</h3><ul><li>Open Perplexity AI — ask "Top 3 India news today"</li><li>Ask "Key pharma or chemical news this week"</li><li>Ask "Key geopolitical developments today"</li><li>Scan Exploding Topics for 2 min for new trends</li></ul></div></div>
+      <div class="tl-item"><div class="tl-dot">2</div><div class="tl-card"><div class="tl-time">📚 Study Block · 30 minutes</div><h3>Deep Learning with Claude</h3><ul><li>Pick one chemistry, pharma, or geopolitics topic</li><li>Ask Claude for mechanism + industry link</li><li>Follow up: "Why? What are the implications?"</li><li>Save the key insight to Google NotebookLM</li></ul></div></div>
+      <div class="tl-item"><div class="tl-dot">3</div><div class="tl-card"><div class="tl-time">🔬 Research Block · 20 minutes</div><h3>Academic Deep Dive</h3><ul><li>Use Elicit.org to search for academic papers</li><li>Upload interesting PDF to NotebookLM</li><li>Ask 3 specific questions about the paper</li><li>Cross-verify claims on Consensus.app</li></ul></div></div>
+      <div class="tl-item"><div class="tl-dot">4</div><div class="tl-card"><div class="tl-time">🌍 Evening · 15 minutes</div><h3>Big Picture Thinking</h3><ul><li>Ask Claude: "What are India's 2030 risks?"</li><li>Check Metaculus for expert probability forecasts</li><li>Reflect: How does this connect to my field?</li><li>Write one key insight in a physical notebook</li></ul></div></div>
+      <div class="tl-item"><div class="tl-dot">5</div><div class="tl-card"><div class="tl-time">💡 Weekly · 1 Hour</div><h3>Synthesis & Foresight Session</h3><ul><li>Run a Claude or Perplexity Deep Research task</li><li>Pick one large domain topic for the week</li><li>Build a structured note across 5 sources</li><li>Teach it to someone — best retention method</li></ul></div></div>
+      <div class="tl-item"><div class="tl-dot">6</div><div class="tl-card"><div class="tl-time">📊 Monthly · Knowledge Audit</div><h3>Review & Plan</h3><ul><li>Review all saved NotebookLM notes this month</li><li>Identify which sectors changed most</li><li>Update your mental model of the world</li><li>Choose next month's primary focus domains</li></ul></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section id="method" style="background:#f8f6f1">
+  <div class="section-inner">
+    <div class="sh-row fade-in">
+      <div>
+        <div class="section-label">Core Method</div>
+        <h2 class="section-title">How to Use AI Like a Master</h2>
+        <p class="section-desc">The 3-layer mechanism and mental models that build genuine understanding.</p>
+      </div>
+      <span class="sh-tag">3-LAYER METHOD</span>
+    </div>
+    <div class="method-layers fade-in">
+      <div class="layer-card"><div class="layer-num">1</div><div class="layer-tag">Layer 1 — Retrieve</div><h3>Search & Find</h3><p>Perplexity AI, Elicit, Semantic Scholar. Replace hours of manual searching with cited, accurate answers in seconds. Always anchor to facts first.</p></div>
+      <div class="layer-card"><div class="layer-num">2</div><div class="layer-tag">Layer 2 — Reason</div><h3>Analyse & Connect</h3><p>Claude for long-form reasoning. NotebookLM to interrogate PDFs and reports. Connect chemistry, business, and geopolitics into one coherent mental model.</p></div>
+      <div class="layer-card"><div class="layer-num">3</div><div class="layer-tag">Layer 3 — Synthesise</div><h3>Forecast & Create</h3><p>Claude or Perplexity Deep Research. Multi-source synthesis into comprehensive insight — from cancer mechanisms to India's 2035 strategic position.</p></div>
+    </div>
+    <div class="principles fade-in">
+      <div class="principle"><h3>The Follow-Up Rule</h3><p>The first answer is never the best. Always ask: <em>"Why?"</em> — <em>"What does the data show?"</em> — <em>"Counterarguments?"</em> — <em>"India implications?"</em> Understanding is built through iteration.</p></div>
+      <div class="principle"><h3>The Chemistry Advantage</h3><p>Your chemical thinking — <em>mechanisms, cause-and-effect, reaction pathways</em> — applies perfectly to geopolitics, business, and society. Every system has a mechanism.</p></div>
+      <div class="principle"><h3>Depth Over Speed</h3><p>Social media trains you for speed. AI gives depth — only if you <em>ask deep questions</em>. Shallow prompts produce shallow answers. The quality of your question IS your thinking.</p></div>
+      <div class="principle"><h3>Build a Second Brain</h3><p>Use <em>NotebookLM</em> as your personal vault. Upload everything important. Chat with it monthly. Compounded knowledge is an <em>unfair advantage</em> that grows every day.</p></div>
+      <div class="principle"><h3>The Gen Z Contrast</h3><p>Most people your age consume 5–7 hrs of short-form video daily, degrading <em>deep focus capacity</em>. One hour of AI-guided learning per day creates a <em>10-year knowledge gap</em> in your favour.</p></div>
+      <div class="principle"><h3>Cross-Domain Thinking</h3><p>Biggest insights come from connecting <em>different domains</em>: India's water crisis → agrochemical demand → API supply chains → geopolitics. AI makes these connections fast.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- INDIA -->
+<section id="india" style="background:#fff">
+  <div class="section-inner">
+    <div class="sh-row fade-in">
+      <div>
+        <div class="section-label">India Deep Dive</div>
+        <h2 class="section-title">Understanding India at Depth</h2>
+        <p class="section-desc">Challenges, opportunities, and exact AI tools for each sector. Click to expand.</p>
+      </div>
+      <span class="sh-tag">6 SECTORS</span>
+    </div>
+    <div class="india-grid fade-in" id="india-grid"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="fb-name">Know The World Using A.I.</div>
+        <div class="fb-sub">By Yash Thummar · 2025 Edition</div>
+        <p class="fb-desc">A curated knowledge system for curious minds in chemistry, pharma, and beyond. Learn deeply, think broadly.</p>
+      </div>
+      <div class="footer-links">
+        <div class="fl-title">Domains</div>
+        <a href="#" onclick="openDomain('pharma');goTo('domains');return false">Pharma & Chemistry</a>
+        <a href="#" onclick="openDomain('geo');goTo('domains');return false">Geopolitics & Business</a>
+        <a href="#" onclick="openDomain('agri');goTo('domains');return false">Agri & Chemicals</a>
+        <a href="#" onclick="openDomain('science');goTo('domains');return false">Science & Medicine</a>
+        <a href="#" onclick="openDomain('future');goTo('domains');return false">Future & Foresight</a>
+      </div>
+      <div class="footer-links">
+        <div class="fl-title">AI Tools</div>
+        <a href="https://www.perplexity.ai" target="_blank">Perplexity AI ↗</a>
+        <a href="https://claude.ai" target="_blank">Claude ↗</a>
+        <a href="https://notebooklm.google.com" target="_blank">NotebookLM ↗</a>
+        <a href="https://elicit.org" target="_blank">Elicit.org ↗</a>
+        <a href="https://consensus.app" target="_blank">Consensus.app ↗</a>
+        <a href="https://www.semanticscholar.org" target="_blank">Semantic Scholar ↗</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Know The World Using A.I. · By <a href="#">Yash Thummar</a></p>
+      <p><a href="https://claude.ai" target="_blank">Built with Claude ↗</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── PARTICLE BACKGROUND ── */
+(function(){
+  const cv=document.getElementById('bg-canvas'),cx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){
+    W=cv.width=window.innerWidth;
+    H=cv.height=window.innerHeight;
+    pts=[];
+    const n=Math.min(60,Math.floor(W*H/12000));
+    for(let i=0;i<n;i++) pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*2+1});
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<140){
+          cx.strokeStyle='rgba(0,107,94,'+(0.22-d/636)+')';
+          cx.lineWidth=.8;cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.stroke();
+        }
+      }
+      cx.fillStyle='rgba(0,107,94,0.45)';
+      cx.beginPath();cx.arc(pts[i].x,pts[i].y,pts[i].r,0,Math.PI*2);cx.fill();
+      pts[i].x+=pts[i].vx;pts[i].y+=pts[i].vy;
+      if(pts[i].x<0||pts[i].x>W)pts[i].vx*=-1;
+      if(pts[i].y<0||pts[i].y>H)pts[i].vy*=-1;
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize();draw();
+})();
+
+/* ── SCROLL PROGRESS ── */
+window.addEventListener('scroll',function(){
+  const h=document.documentElement;
+  document.getElementById('prog').style.width=((h.scrollTop/(h.scrollHeight-h.clientHeight))*100)+'%';
+  document.getElementById('navbar').classList.toggle('scrolled',h.scrollTop>10);
+  // active nav link
+  ['domains','tools','routine','method','india'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(!el)return;
+    const r=el.getBoundingClientRect();
+    document.querySelectorAll('.nav-link').forEach(function(l){
+      if(l.getAttribute('onclick')&&l.getAttribute('onclick').includes("'"+id+"'"))
+        l.classList.toggle('on',r.top<=100&&r.bottom>80);
+    });
+  });
+});
+
+/* ── SCROLL TO SECTION ── */
+function goTo(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const offset=el.getBoundingClientRect().top+window.scrollY-70;
+  window.scrollTo({top:offset,behavior:'smooth'});
+}
+
+/* ── COUNTER ANIMATION ── */
+function animateCounters(){
+  document.querySelectorAll('[data-target]').forEach(function(el){
+    const target=parseInt(el.dataset.target),dur=1200;
+    let start=null;
+    function step(ts){
+      if(!start)start=ts;
+      const p=Math.min((ts-start)/dur,1);
+      el.textContent=Math.floor(p*target)+(target===12?'+':'');
+      if(p<1)requestAnimationFrame(step);
+      else el.textContent=target+(target===12?'+':'');
+    }
+    requestAnimationFrame(step);
+  });
+}
+const statsObs=new IntersectionObserver(function(e){if(e[0].isIntersecting){animateCounters();statsObs.disconnect();}},{threshold:.4});
+statsObs.observe(document.querySelector('.stats-strip'));
+
+/* ── SCROLL REVEAL ── */
+const revObs=new IntersectionObserver(function(entries){
+  entries.forEach(function(en){if(en.isIntersecting)en.target.classList.add('visible');});
+},{threshold:.08});
+document.querySelectorAll('.fade-in,.tl-item').forEach(function(el){revObs.observe(el);});
+
+/* ── DATA ── */
+var DOMAINS={
+  pharma:{title:"Pharma & Chemistry",sub:"drug_synthesis · cancer_biology · api_manufacturing · molecular_design",
+    tools:[
+      {n:"Claude (Anthropic)",b:"free",url:"https://claude.ai",d:"Best AI for long-form chemistry reasoning. Ask mechanism of action of any drug, full synthesis routes, reaction conditions, or complex biochemistry."},
+      {n:"Perplexity AI",b:"free",url:"https://www.perplexity.ai",d:"Real-time search through PubMed, ChemRxiv, and pharma news. Best for FDA approvals, clinical trial results, and API market intelligence with live citations."},
+      {n:"Elicit.org",b:"free",url:"https://elicit.org",d:"AI-powered academic literature search. Automatically extracts key findings from papers on drug targets, disease mechanisms, and API chemistry."},
+      {n:"SciSpace",b:"free",url:"https://typeset.io",d:"Upload any dense research paper and chat with it in plain language. Excellent for biochemistry papers, mechanism studies, and pharmacology research."},
+      {n:"Scite.ai",b:"paid",url:"https://scite.ai",d:"Shows whether scientific papers support or contradict a claim. Essential for validating cancer cure claims or evaluating emerging treatment data."}
+    ],
+    prompts:[
+      {l:"Drug Mechanism",q:"Explain the complete mechanism of action of Imatinib in CML cancer treatment, including the BCR-ABL kinase pathway, how drug resistance develops, and the chemistry of second-generation inhibitors."},
+      {l:"API Synthesis",q:"What are the key steps in industrial synthesis of Paracetamol API — reaction conditions, yield optimization, impurity control strategies, and current ICH regulatory requirements?"},
+      {l:"Pharma Business",q:"Analyse the global API manufacturing market in 2025: India vs China competitive dynamics, key Indian players, China+1 strategy implications, and geopolitical risks for Indian pharma exporters."},
+      {l:"Cancer Research 2025",q:"What are the most promising 2024–2025 breakthroughs in solid tumour treatment using CAR-T cell therapy and bispecific antibodies — explain the underlying chemistry and mechanism."}
+    ]},
+  geo:{title:"Geopolitics & Business",sub:"india · china · usa · russia · middle_east · power_dynamics",
+    tools:[
+      {n:"Perplexity Deep Research",b:"free",url:"https://www.perplexity.ai",d:"Real-time web search with full citations. Ask about live diplomatic situations, trade wars, sanctions, or any political development worldwide."},
+      {n:"Claude Deep Research",b:"paid",url:"https://claude.ai",d:"Multi-source synthesis for comprehensive analysis of India-China tensions, US-China tech war, OPEC+ dynamics, or any geopolitical topic."},
+      {n:"Google NotebookLM",b:"free",url:"https://notebooklm.google.com",d:"Upload World Bank, IMF, MEA policy documents and have a deep conversation with them. Best for analysing official multilateral reports."},
+      {n:"Metaculus",b:"free",url:"https://www.metaculus.com",d:"Aggregated expert probability forecasts on geopolitical events. See what professional forecasters predict — with full reasoning visible."},
+      {n:"ChatGPT Browsing",b:"free",url:"https://chatgpt.com",d:"Secondary tool for current events analysis. Ask for political analysis of any country's economic policy or diplomatic move with live web access."}
+    ],
+    prompts:[
+      {l:"India-China Rivalry",q:"Analyse the current geopolitical and economic competition between India and China in 2025 — specifically in pharma, specialty chemicals, and manufacturing sectors, with data."},
+      {l:"Middle East-India Axis",q:"How is the India-UAE-Saudi Arabia strategic triangle shaping India's energy security, trade policy, and diaspora economy in 2025? What are the risks to this relationship?"},
+      {l:"Russia Sanctions 2025",q:"What is the current state of Russia's economic isolation in 2025 — which countries continue trading with Russia and how does this affect India's geopolitical calculations?"},
+      {l:"India's Critical Decade",q:"Identify the 5 most critical structural economic and political challenges India faces from 2025 to 2035, with evidence-based assessment of severity and proposed solutions."}
+    ]},
+  agri:{title:"Agri & Chemicals",sub:"pesticides · fertilisers · supply_chains · bio_pesticides · india_agri",
+    tools:[
+      {n:"Claude + Perplexity",b:"free",url:"https://claude.ai",d:"Claude for agrochemical chemistry mechanisms (pesticide modes of action, formulation science) and Perplexity for live market research on UPL, Syngenta, PI Industries."},
+      {n:"Exploding Topics",b:"free",url:"https://explodingtopics.com",d:"Track emerging trends in agri-tech, bio-pesticides, and precision farming 6–18 months before they mainstream."},
+      {n:"SciSpace",b:"free",url:"https://typeset.io",d:"Chat with research papers on crop disease biology, novel biological pesticide chemistry, RNAi technology, and sustainable agri-chemistry advances."},
+      {n:"Elicit.org",b:"free",url:"https://elicit.org",d:"Search academic literature on herbicide resistance mechanisms, biopesticide efficacy studies, and soil chemistry research."}
+    ],
+    prompts:[
+      {l:"Pesticide Chemistry",q:"Explain the molecular mechanism of action of organophosphate pesticides — how they inhibit acetylcholinesterase, why they're being phased out, and which chemical classes are replacing them."},
+      {l:"India vs China Agri",q:"Analyse India's agrochemical export industry competitive position versus China in 2025 — pricing dynamics, regulatory differences, market share by region, and strategic opportunities."},
+      {l:"Future Agri Tech 2030",q:"What role will biological pesticides, RNA interference technology, and AI-driven precision agriculture play in India's farming sector by 2030? What companies are leading this?"},
+      {l:"Fertiliser Geopolitics",q:"How did the Russia-Ukraine war disrupt India's fertiliser imports from 2022 to 2025 — specific impact on urea, DAP, and MOP supply chains and India's strategic response."}
+    ]},
+  society:{title:"Society & Gen Z",sub:"youth_behaviour · dopamine_loops · india_transformation · digital_addiction",
+    tools:[
+      {n:"Claude + Perplexity",b:"free",url:"https://claude.ai",d:"Ask for sociological research on Gen Z behaviour, neuroscience of social media addiction, and documented effects of the digital economy on Indian youth."},
+      {n:"Google Trends",b:"free",url:"https://trends.google.com",d:"Real-time data on what people across India are actually searching. Compare states and demographics, track rising topics, observe cultural shifts live."},
+      {n:"Exploding Topics",b:"free",url:"https://explodingtopics.com",d:"Tracks viral social and cultural trends 6–18 months before they peak. See what Indian Gen Z is gravitating toward before it becomes obvious."},
+      {n:"NotebookLM",b:"free",url:"https://notebooklm.google.com",d:"Upload sociology papers, NSSO census reports, UNICEF youth studies, or WHO mental health data — then interrogate them with specific India-focused questions."}
+    ],
+    prompts:[
+      {l:"Gen Z Psychology India",q:"Why are Indian Gen Z youth increasingly choosing social media validation over real-world skill development? What does peer-reviewed psychology and neuroscience show about the mechanisms?"},
+      {l:"Mental Health Crisis",q:"Give a data-driven analysis of India's growing youth mental health crisis — causes, demographic breakdown, comparison with other emerging markets, and evidence-based policy interventions."},
+      {l:"Attention Neuroscience",q:"How is daily consumption of Instagram Reels and YouTube Shorts neurologically rewiring attention spans of Indian students — what does current neuroscience show and what can individuals do?"},
+      {l:"India 2035 Social Shifts",q:"What are the 5 most significant social and cultural shifts already in motion that will reshape Indian society between 2025 and 2035? Give a data-grounded analysis."}
+    ]},
+  science:{title:"Science & Medicine",sub:"alphafold · drug_discovery · pandemic_prediction · molecular_biology",
+    tools:[
+      {n:"Elicit.org",b:"free",url:"https://elicit.org",d:"Best AI for scientific literature. Search millions of papers with automatic extraction of key findings on disease biology, drug targets, and clinical outcomes."},
+      {n:"AlphaFold (DeepMind)",b:"free",url:"https://alphafold.ebi.ac.uk",d:"Predicts 3D protein structures from amino acid sequences. Critical for understanding drug target geometry, enzyme mechanisms, and AI-driven drug discovery."},
+      {n:"Consensus.app",b:"free",url:"https://consensus.app",d:"Searches peer-reviewed research and gives evidence-weighted summaries. Perfect for 'does X treatment work for Y disease' — cuts through noise instantly."},
+      {n:"Semantic Scholar",b:"free",url:"https://www.semanticscholar.org",d:"Free academic search with AI summaries and citation analysis. Track influential research in oncology, infectious disease, and precision medicine."},
+      {n:"SciSpace + Claude",b:"free",url:"https://typeset.io",d:"Upload a dense paper to SciSpace for extraction, then bring key concepts to Claude for deep mechanistic reasoning and industry implications."}
+    ],
+    prompts:[
+      {l:"Pandemic Prediction AI",q:"How is AI being used to predict the next pandemic in 2025 — what specific models exist, what biological and environmental data do they use, and what is their track record?"},
+      {l:"Cancer Hallmarks",q:"Explain the 10 hallmarks of cancer at a molecular level and identify which AI-driven drug discovery approaches targeting each hallmark show the most clinical promise in 2025."},
+      {l:"AlphaFold Drug Discovery",q:"How has AlphaFold 3 specifically changed pharmaceutical drug discovery — give concrete recent examples of drugs or drug candidates developed using protein structure prediction."},
+      {l:"Malaria Vaccine Pipeline",q:"What is the current status of the mRNA malaria vaccine pipeline, R21/Matrix-M real-world deployment, and new antimalarial drug candidates in clinical trials for 2025–2030?"}
+    ]},
+  future:{title:"Future & Foresight",sub:"india_2030 · global_risks · scenario_planning · long_range_thinking",
+    tools:[
+      {n:"Claude Deep Research",b:"paid",url:"https://claude.ai",d:"Multi-source synthesis to build comprehensive future scenario analyses for India, global industries, or technology trajectories. Best tool for serious foresight work."},
+      {n:"Perplexity Deep Research",b:"paid",url:"https://www.perplexity.ai",d:"Pulls live data from Brookings, RAND, ORF India, Carnegie, IMF, and government reports to build evidence-grounded long-range forecasts."},
+      {n:"Metaculus",b:"free",url:"https://www.metaculus.com",d:"Professional forecaster probability estimates on geopolitical, scientific, and economic events — see where expert consensus is forming about the future."},
+      {n:"NotebookLM",b:"free",url:"https://notebooklm.google.com",d:"Upload WEF Global Risk Report, IMF World Economic Outlook, and NITI Aayog strategy documents — then interrogate them for India-specific scenarios."},
+      {n:"Exploding Topics",b:"free",url:"https://explodingtopics.com",d:"Identify business opportunities and risks by tracking trends 6–18 months before they become obvious — essential for strategic early-mover positioning."}
+    ],
+    prompts:[
+      {l:"India Water Crisis",q:"Analyse India's water scarcity trajectory — which states face acute shortage by 2030, how does this affect chemical and agricultural industries, and what technological solutions are viable?"},
+      {l:"India Chemicals 2035",q:"What will India's specialty chemicals industry look like in 2035? Analyse opportunities, Chinese competition threats, global supply chain shifts, and how a young chemist should position their career."},
+      {l:"AI Job Disruption India",q:"Which specific sectors of the Indian economy face most disruption from AI in the next 10 years, and what new roles in chemistry, pharma, and research will emerge that don't exist today?"},
+      {l:"Global Risk 2030",q:"What are the top 5 global risks for 2025–2030 according to major think tanks, and how should India and Indian businesses in chemical and pharma sectors position themselves?"}
+    ]}
+};
+
+var TOOLS=[
+  {n:1,ic:"🔍",nm:"Perplexity AI",url:"https://www.perplexity.ai",p:"Real-time web search with citations. Best for current affairs, pharma news, market data, and geopolitical developments. Use daily for your morning briefing.",tags:["Free + Pro","Current Affairs","Research","Citations"]},
+  {n:2,ic:"🤖",nm:"Claude (Anthropic)",url:"https://claude.ai",p:"Best for long-form reasoning, chemistry mechanisms, business analysis, and connecting ideas across domains. Deep dives after Perplexity gives you the facts.",tags:["Free + Pro","Deep Analysis","Chemistry","Writing"]},
+  {n:3,ic:"📓",nm:"Google NotebookLM",url:"https://notebooklm.google.com",p:"Upload any PDF — research papers, IMF reports, NITI Aayog docs — and have a full conversation with them. Your personal second brain.",tags:["Free","PDF Chat","Reports","Knowledge Base"]},
+  {n:4,ic:"📚",nm:"Elicit.org",url:"https://elicit.org",p:"AI-powered academic literature search. Search millions of papers on drug targets, disease mechanisms, and API chemistry automatically.",tags:["Free","Academic Papers","Science","Medicine"]},
+  {n:5,ic:"💬",nm:"SciSpace / Typeset",url:"https://typeset.io",p:"Upload any research paper and chat with it in plain language. Excellent for dense biochemistry, pharmacology papers, and clinical trial data.",tags:["Free","Paper Explainer","Chemistry"]},
+  {n:6,ic:"✅",nm:"Consensus.app",url:"https://consensus.app",p:"Searches peer-reviewed research and gives evidence-based summaries. Cuts through noise with scientific consensus on medical questions.",tags:["Free","Evidence-Based","Medicine","Verification"]},
+  {n:7,ic:"🔬",nm:"Semantic Scholar",url:"https://www.semanticscholar.org",p:"Free academic search with AI summaries and citation graphs. Track cutting-edge oncology, malaria, and asthma research and the most influential papers.",tags:["Free","Academic","Citation Analysis"]},
+  {n:8,ic:"🧬",nm:"AlphaFold (DeepMind)",url:"https://alphafold.ebi.ac.uk",p:"Predicts 3D protein structures from amino acid sequences. Critical for drug target geometry, enzyme mechanisms, and computational drug discovery.",tags:["Free","Protein Structure","Drug Discovery"]},
+  {n:9,ic:"🔮",nm:"Metaculus",url:"https://www.metaculus.com",p:"Aggregated expert probability forecasts on geopolitical, scientific, and economic events. See what professional forecasters predict — with reasoning.",tags:["Free","Forecasting","Geopolitics"]},
+  {n:10,ic:"📊",nm:"Exploding Topics",url:"https://explodingtopics.com",p:"Tracks emerging trends 6–18 months before they go mainstream. Spot opportunities in agri-tech, bio-pesticides, AI in pharma before everyone else.",tags:["Free + Pro","Trend Detection","Business"]},
+  {n:11,ic:"📉",nm:"Google Trends",url:"https://trends.google.com",p:"Real-time data on what people across India are searching. Compare states, track rising topics, see cultural shifts as they happen. Ground truth.",tags:["Free","Real-Time Data","India","Social"]},
+  {n:12,ic:"🎙️",nm:"NotebookLM Audio",url:"https://notebooklm.google.com",p:"Generates podcast-style audio briefings from your uploaded documents. Upload WEF or IMF reports and listen to them explained — on the go.",tags:["Free","Audio Learning","Productivity"]}
+];
+
+var INDIA=[
+  {tag:"🏭 Pharma & API Sector",title:"India's API & Chemical Industry",p:"India supplies 20% of global generic drugs. Key challenge: reducing Chinese API dependence. Key opportunity: specialty chemicals, CRAMS, and China+1 manufacturing shift.",list:["Sun Pharma, Cipla, Divi's Labs — track weekly on Perplexity","China+1 strategy directly benefiting Indian API manufacturers","PLI scheme for bulk drugs — ask Claude for full analysis","Use Elicit for latest API synthesis and impurity research"]},
+  {tag:"👨‍🎓 Youth & Education",title:"Gen Z India: The Real Picture",p:"Dopamine loops from Reels/Shorts measurably reduce deep-focus capacity in ages 16–25. India is among the most affected globally due to cheap data post-Jio (2016).",list:["Google Trends — real search data of Indian youth by state","Ask Claude: Neuroscience of social media addiction in detail","SparkToro — Indian youth media consumption patterns","UNICEF/WHO reports — upload to NotebookLM and interrogate"]},
+  {tag:"💧 Future Risks 2025–2035",title:"India's Structural Challenges",p:"Water scarcity, air quality, agricultural stress, urban migration, and energy transition are all converging simultaneously into one stress point.",list:["WEF Global Risk Report — upload to NotebookLM","Metaculus.com for expert probability forecasts on India","IMF World Economic Outlook — India chapter (free PDF)","ORF India think tank reports via Perplexity searches"]},
+  {tag:"🌐 Geopolitical Position",title:"India's Strategic Moves",p:"India plays multi-alignment — balancing USA, Russia, and Middle East while competing with China in tech, pharma, and manufacturing.",list:["India–UAE–Saudi Arabia energy and trade triangle","China+1 in manufacturing: India vs Vietnam vs Mexico","Quad alliance: technology and supply chain implications","Use Perplexity daily for live diplomatic developments"]},
+  {tag:"🧪 Agrochemicals Sector",title:"India's Agri-Chemical Industry",p:"India is the 4th largest agrochemical producer globally. UPL, PI Industries, and Rallis navigate Chinese competition, bio-pesticide trends, and export shifts.",list:["Ask Claude: organophosphate replacement chemistry in detail","Track UPL, PI Industries, Bayer CropScience India news","Exploding Topics: bio-pesticide and precision agri trends","Fertiliser geopolitics — Russia-Ukraine impact on import costs"]},
+  {tag:"🤖 AI Disruption",title:"Sectors AI Will Transform in India",p:"Pharma R&D, API quality control, agrochemical formulation, and specialty chemical manufacturing are all being transformed. Knowing this early gives you a career edge.",list:["AlphaFold impact on Indian drug discovery — ask Claude","AI in API QC: Divi's Labs, Laurus Labs use cases","AgriTech AI: precision farming startups in India 2025","Ask Claude: New chemistry jobs emerging in India by 2030"]}
+];
+
+/* ── BUILD ALL TOOLS ── */
+document.getElementById('tool-cards').innerHTML=TOOLS.map(function(t){
+  return '<div class="tc" onclick="window.open(\''+t.url+'\',\'_blank\')">'+
+    '<div class="tc-head">'+
+    '<div class="tc-icon">'+t.ic+'</div>'+
+    '<div class="tc-meta"><div class="tc-num">#'+String(t.n).padStart(2,'0')+'</div><div class="tc-name">'+t.nm+'</div></div>'+
+    '</div>'+
+    '<div class="tc-body">'+
+    '<p>'+t.p+'</p>'+
+    '<div class="tc-tags">'+t.tags.map(function(tg){return '<span class="tc-tag">'+tg+'</span>';}).join('')+'</div>'+
+    '<a class="tc-link" href="'+t.url+'" target="_blank" onclick="event.stopPropagation()">Open '+t.nm+' →</a>'+
+    '</div></div>';
+}).join('');
+
+/* ── BUILD INDIA GRID ── */
+document.getElementById('india-grid').innerHTML=INDIA.map(function(item,i){
+  return '<div class="india-card" id="ic-'+i+'" onclick="toggleIndia('+i+')">'+
+    '<div class="ic-head">'+
+    '<div><div class="ic-tag">'+item.tag+'</div><div class="ic-title">'+item.title+'</div></div>'+
+    '<div class="ic-toggle">+</div>'+
+    '</div>'+
+    '<div class="ic-body">'+
+    '<p>'+item.p+'</p>'+
+    '<ul>'+item.list.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>'+
+    '</div></div>';
+}).join('');
+
+function toggleIndia(i){
+  var card=document.getElementById('ic-'+i);
+  var wasOpen=card.classList.contains('expanded');
+  document.querySelectorAll('.india-card').forEach(function(c){c.classList.remove('expanded');});
+  if(!wasOpen) card.classList.add('expanded');
+}
+
+/* ── DOMAIN PANEL ── */
+var openKey=null;
+function openDomain(key){
+  var panel=document.getElementById('detail-panel');
+  if(openKey===key && panel.classList.contains('open')){closePanel();return;}
+  openKey=key;
+  document.querySelectorAll('.domain-card').forEach(function(c){c.classList.remove('active');});
+  document.getElementById('dc-'+key).classList.add('active');
+  var d=DOMAINS[key];
+  document.getElementById('dp-title').textContent=d.title;
+  document.getElementById('dp-sub').textContent=d.sub;
+  document.getElementById('dp-tools-list').innerHTML=d.tools.map(function(t){
+    return '<div class="tool-item">'+
+      '<span class="tool-badge '+(t.b==='free'?'tb-free':'tb-paid')+'">'+(t.b==='free'?'FREE':'PRO')+'</span>'+
+      '<div class="tool-info"><h4>'+t.n+'</h4><p>'+t.d+'</p>'+
+      '<a class="tool-link" href="'+t.url+'" target="_blank" onclick="event.stopPropagation()">Visit '+t.n+' ↗</a>'+
+      '</div></div>';
+  }).join('');
+  document.getElementById('dp-prompts-list').innerHTML=d.prompts.map(function(p){
+    var safe=p.q.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
+    return '<button class="prompt-card" onclick="copyPrompt(this,\''+safe+'\')">'+
+      '<div class="prompt-label">'+p.l+'</div>'+
+      '<div class="prompt-text">'+p.q.substring(0,95)+(p.q.length>95?'…':'')+'</div>'+
+      '<div class="prompt-copy-hint">📋 Tap to copy full prompt</div>'+
+      '</button>';
+  }).join('');
+  panel.classList.add('open');
+  setTimeout(function(){panel.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
+}
+
+function closePanel(){
+  document.getElementById('detail-panel').classList.remove('open');
+  document.querySelectorAll('.domain-card').forEach(function(c){c.classList.remove('active');});
+  openKey=null;
+}
+
+/* ── COPY PROMPT ── */
+function copyPrompt(btn,text){
+  navigator.clipboard.writeText(text).catch(function(){});
+  var toast=document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(function(){toast.classList.remove('show');},2500);
+  var hint=btn.querySelector('.prompt-copy-hint');
+  hint.textContent='✓ Copied to clipboard!';
+  setTimeout(function(){hint.textContent='📋 Tap to copy full prompt';},2200);
+}
+</script>
+</body>
+</html>
